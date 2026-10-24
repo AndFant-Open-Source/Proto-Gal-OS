@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.local
+
+# Configurazione locale dell'assistente di sviluppo (non fa parte del software)
+.claude/
+
+# Archivi di backup locali
+*.zip
