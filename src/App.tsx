@@ -19,6 +19,7 @@ import NuovoContratto from '@/pages/contratti/NuovoContratto';
 import DettaglioContratto from '@/pages/contratti/DettaglioContratto';
 import ModificaContratto from '@/pages/contratti/ModificaContratto';
 import CopyrightLicenza from '@/pages/CopyrightLicenza';
+import ImportaBackup from '@/pages/admin/ImportaBackup';
 
 function AccessoNonAbilitato({ onEsci }: { onEsci: () => Promise<void> }) {
   return (
@@ -179,6 +180,10 @@ function AppRoutes() {
             </Layout>
           </PrivateRoute>
         }
+      />
+      <Route
+        path="/admin/importa"
+        element={<PrivateRoute soloAdmin><Layout><ImportaBackup /></Layout></PrivateRoute>}
       />
       <Route
         path="/licenza"

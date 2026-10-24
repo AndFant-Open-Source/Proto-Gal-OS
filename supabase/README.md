@@ -46,3 +46,13 @@ gli utenti con un **profilo attivo**; un account senza profilo, o disattivato, n
 - **Rinumerazione** (`protocollo_rinumera(anno, tipo)`): "tutto o niente", solo admin; ogni numero
   cambiato resta nello storico.
 - **Eliminazioni** registrate nello storico dal database.
+
+## Aggiornamenti dei database già installati
+
+Le nuove installazioni usano solo `schema.sql`. Chi ha installato una versione precedente esegue
+nella SQL Editor, una volta, i file della cartella `aggiornamenti/` più recenti della propria
+installazione:
+
+| File | Contenuto |
+|------|-----------|
+| `aggiornamenti/2026-10-importazione-backup.sql` | Funzione `protocollo_importa_backup` per la pagina «Importa backup» (solo admin) |

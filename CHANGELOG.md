@@ -2,6 +2,15 @@
 
 Le versioni seguono il [versionamento semantico](https://semver.org/lang/it/).
 
+## [Non rilasciato]
+
+### Aggiunto
+- **Importa backup** (amministrazione): carica il file ZIP creato con «Backup dati» di Proto Gal
+  multi-GAL. Protocolli, allegati, contratti e storico mantengono numeri, date e autori; le persone
+  si ricollegano a quelle della piattaforma; i contatori vengono allineati. Ripetibile senza duplicati.
+  Per i database già installati eseguire `supabase/aggiornamenti/2026-10-importazione-backup.sql`.
+- Pagina **Copyright e licenza**; nella barra laterale resta solo il link.
+
 ## [1.0.0] — 2026-10-23
 
 Prima versione dell'edizione per singolo GAL, derivata da ProtoGal 1.1.0.

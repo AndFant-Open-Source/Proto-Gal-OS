@@ -19,6 +19,7 @@ import {
   ScrollText,
   FileSignature,
   Scale,
+  FileArchive,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ const VOCI_CONTRATTI = [
 const VOCI_ADMIN = [
   { path: '/admin/numerazione', label: 'Numerazione', icona: Hash },
   { path: '/utenti', label: 'Gestione Utenti', icona: Users },
+  { path: '/admin/importa', label: 'Importa backup', icona: FileArchive },
 ];
 
 // ── Ente servito da questa installazione (edizione per singolo GAL) ───────────
