@@ -18,6 +18,7 @@ import RepertorioContratti from '@/pages/contratti/RepertorioContratti';
 import NuovoContratto from '@/pages/contratti/NuovoContratto';
 import DettaglioContratto from '@/pages/contratti/DettaglioContratto';
 import ModificaContratto from '@/pages/contratti/ModificaContratto';
+import CopyrightLicenza from '@/pages/CopyrightLicenza';
 
 function AccessoNonAbilitato({ onEsci }: { onEsci: () => Promise<void> }) {
   return (
@@ -178,6 +179,10 @@ function AppRoutes() {
             </Layout>
           </PrivateRoute>
         }
+      />
+      <Route
+        path="/licenza"
+        element={<PrivateRoute><Layout><CopyrightLicenza /></Layout></PrivateRoute>}
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

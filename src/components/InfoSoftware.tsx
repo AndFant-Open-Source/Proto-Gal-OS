@@ -4,7 +4,7 @@
 import { Code2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const URL_CODICE_SORGENTE =
+export const URL_CODICE_SORGENTE =
   import.meta.env.VITE_URL_CODICE_SORGENTE || 'https://github.com/AndFant-Open-Source/Proto-Gal-OS';
 
 /**

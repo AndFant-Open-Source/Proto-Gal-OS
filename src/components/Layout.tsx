@@ -18,10 +18,10 @@ import {
   Settings,
   ScrollText,
   FileSignature,
+  Scale,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { InfoSoftware } from '@/components/InfoSoftware';
 import { NOME_ENTE } from '@/lib/ente';
 import { toast } from 'sonner';
 
@@ -215,7 +215,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <LogOut className="mr-2 h-4 w-4" />
             Esci
           </Button>
-          <InfoSoftware scuro className="mt-3 px-1" />
+          {/* L'avviso completo è nella pagina di accesso e in "Copyright e licenza" */}
+          <NavLink
+            to="/licenza"
+            className="mt-3 flex items-center gap-1.5 px-1 text-xs text-blue-200 hover:text-white"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <Scale className="h-3 w-3" aria-hidden="true" />
+            Copyright e licenza
+          </NavLink>
         </div>
       </aside>
 
