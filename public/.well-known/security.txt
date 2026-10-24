@@ -9,4 +9,4 @@ Contact: mailto:sicurezza@example.invalid
 Expires: 2027-10-22T00:00:00.000Z
 Preferred-Languages: it, en
 Canonical: https://example.invalid/.well-known/security.txt
-Policy: https://github.com/AndFantini/ProtoGal/blob/main/SECURITY.md
+Policy: https://github.com/Gal-Etrusco-Cimino/ProtoGal/blob/main/SECURITY.md
