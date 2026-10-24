@@ -65,11 +65,29 @@ Esegue il controllo dei tipi TypeScript e produce i file statici nella cartella 
 
 ## 4. Produzione
 
-**Vercel** (configurazione già presente in `vercel.json`):
+**Cloudflare Pages (consigliato)** — gratuito anche per l'uso da parte di un ente. Un progetto
+Pages per ogni GAL, tutti collegati allo stesso repository ma ciascuno con le variabili del proprio
+progetto Supabase.
 
-1. Importare il repository in Vercel.
-2. Impostare le stesse variabili del file `.env` in *Settings → Environment Variables*.
-3. Ogni push sul ramo `main` pubblica una nuova versione.
+1. *Workers & Pages → Create → Pages → Connect to Git*: collegare GitHub e scegliere il repository.
+2. Impostazioni di build:
+   - *Framework preset*: `React (Vite)` (oppure `None`)
+   - *Build command*: `npm run build`
+   - *Build output directory*: `dist`
+3. *Environment variables* (Production): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
+   `VITE_NOME_ENTE` (facoltative `VITE_UFFICI`, `VITE_URL_CODICE_SORGENTE`).
+   Le variabili entrano nella build: dopo averle cambiate serve un nuovo deploy.
+4. *Save and Deploy*. Ogni push sul ramo `main` pubblica una nuova versione.
+5. In Supabase, *Authentication → URL Configuration*: impostare **Site URL** con l'indirizzo
+   pubblicato (es. `https://protogal-nome-gal.pages.dev`) e aggiungerlo a **Redirect URLs**.
+   Senza questo passaggio i link delle e-mail di invito puntano a un indirizzo sbagliato.
+
+Cloudflare applica automaticamente le intestazioni di sicurezza di `public/_headers` (politica dei
+contenuti, niente incorporamento in altri siti, solo HTTPS) e serve `index.html` per le pagine
+interne dell'app. La versione di Node per la build è indicata in `.nvmrc`.
+
+**Vercel**: configurazione presente in `vercel.json`. Attenzione: il piano gratuito "Hobby" è
+riservato all'uso personale non commerciale.
 
 **Altro hosting**: pubblicare il contenuto di `dist/` e configurare il server perché ogni percorso
 non trovato restituisca `index.html` (applicazione a pagina singola).
