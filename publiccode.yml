@@ -8,7 +8,7 @@
 publiccodeYmlVersion: "0.4"
 
 name: ProtoGal OS
-url: "https://github.com/Gal-Etrusco-Cimino/ProtoGal"
+url: "https://github.com/AndFant-Open-Source/Proto-Gal-OS"
 softwareVersion: "1.0.0"
 releaseDate: "2026-10-23"
 platforms:
@@ -47,7 +47,7 @@ description:
       Ogni ente ha la propria installazione, con un proprio database: nessun
       utente può vedere o gestire i dati di un altro ente. Ogni operazione resta
       nello storico.
-    documentation: "https://github.com/Gal-Etrusco-Cimino/ProtoGal/tree/main/docs"
+    documentation: "https://github.com/AndFant-Open-Source/Proto-Gal-OS/tree/main/docs"
     features:
       - Protocollo in entrata e in uscita con numerazione progressiva per anno
       - Stampigliatura del numero di protocollo sugli allegati PDF

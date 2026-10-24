@@ -81,8 +81,8 @@ Apache-2.0, BSD). L'elenco completo è in `package.json`.
 ## Installazione rapida
 
 ```bash
-git clone https://github.com/Gal-Etrusco-Cimino/ProtoGal.git
-cd ProtoGal
+git clone https://github.com/AndFant-Open-Source/Proto-Gal-OS.git
+cd Proto-Gal-OS
 npm install
 cp .env.example .env     # compilare con i dati del proprio progetto Supabase
 npm run dev              # http://localhost:5173

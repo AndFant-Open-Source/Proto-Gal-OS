@@ -9,7 +9,7 @@
 version = 1
 SPDX-PackageName = "ProtoGal OS"
 SPDX-PackageSupplier = "Person: Andrea Fantini"
-SPDX-PackageDownloadLocation = "https://github.com/Gal-Etrusco-Cimino/ProtoGal"
+SPDX-PackageDownloadLocation = "https://github.com/AndFant-Open-Source/Proto-Gal-OS"
 SPDX-PackageComment = "AGPL-3.0-or-later con termini aggiuntivi ai sensi della sezione 7: vedi TERMINI-AGGIUNTIVI.md"
 
 # Tutto il software: AGPL-3.0-or-later (+ termini aggiuntivi, TERMINI-AGGIUNTIVI.md)

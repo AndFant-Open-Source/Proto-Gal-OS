@@ -5,7 +5,7 @@ import { Code2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const URL_CODICE_SORGENTE =
-  import.meta.env.VITE_URL_CODICE_SORGENTE || 'https://github.com/Gal-Etrusco-Cimino/ProtoGal';
+  import.meta.env.VITE_URL_CODICE_SORGENTE || 'https://github.com/AndFant-Open-Source/Proto-Gal-OS';
 
 /**
  * "Note legali appropriate" (AGPL-3.0, sezione 5 lettera d): avviso di attribuzione,

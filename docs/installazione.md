@@ -40,8 +40,8 @@ separati perché stanno su server diversi.
 ## 2. Ambiente di sviluppo
 
 ```bash
-git clone https://github.com/Gal-Etrusco-Cimino/ProtoGal.git
-cd ProtoGal
+git clone https://github.com/AndFant-Open-Source/Proto-Gal-OS.git
+cd Proto-Gal-OS
 npm install
 cp .env.example .env    # su Windows: copy .env.example .env
 ```
