@@ -5,6 +5,13 @@ Le versioni seguono il [versionamento semantico](https://semver.org/lang/it/).
 ## [Non rilasciato]
 
 ### Aggiunto
+- **Fascicoli** (`F/0001/2026`): raccolgono protocolli e contratti di una stessa pratica, con
+  classificazione da **titolario**, responsabile, ufficio, riferimento esterno (per il futuro
+  collegamento con altre applicazioni del GAL), apertura e chiusura. Riquadro "Fascicoli" nel
+  dettaglio di protocolli e contratti, filtro per fascicolo nel registro, scaricamento del
+  fascicolo in ZIP con documenti timbrati e indice PDF. Chiusura, riapertura e titolario riservati
+  all'amministratore; storico registrato dal database.
+  Per i database già installati eseguire `supabase/aggiornamenti/2026-10-fascicoli.sql`.
 - **Importa backup** (amministrazione): carica il file ZIP creato con «Backup dati» di Proto Gal
   multi-GAL. Protocolli, allegati, contratti e storico mantengono numeri, date e autori; le persone
   si ricollegano a quelle della piattaforma; i contatori vengono allineati. Ripetibile senza duplicati.

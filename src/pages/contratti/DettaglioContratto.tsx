@@ -18,6 +18,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { AllegatiUpload } from '@/components/AllegatiUpload';
+import { FascicoliDocumento } from '@/components/FascicoliDocumento';
 import { useAuth } from '@/hooks/useAuth';
 import { NOME_ENTE } from '@/lib/ente';
 import {
@@ -476,6 +477,11 @@ export default function DettaglioContratto() {
               </CardContent>
             </Card>
           )}
+
+          <FascicoliDocumento
+            documento={{ contratto_id: contratto.id }}
+            onCambio={() => { getLogContratto(contratto.id).then(setLog).catch((err: unknown) => console.error(err)); }}
+          />
 
           <Card>
             <CardHeader>

@@ -20,6 +20,8 @@ import {
   FileSignature,
   Scale,
   FileArchive,
+  FolderOpen,
+  FolderTree,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -30,6 +32,7 @@ const VOCI_PRINCIPALI = [
   { path: '/', label: 'Dashboard', icona: LayoutDashboard, ruoli: ['admin', 'operatore', 'lettore'] },
   { path: '/nuovo', label: 'Nuovo Protocollo', icona: FilePlus, ruoli: ['admin', 'operatore'] },
   { path: '/registro', label: 'Registro Protocolli', icona: FileText, ruoli: ['admin', 'operatore', 'lettore'] },
+  { path: '/fascicoli', label: 'Fascicoli', icona: FolderOpen, ruoli: ['admin', 'operatore', 'lettore'] },
   { path: '/report', label: 'Report & Export', icona: BarChart2, ruoli: ['admin', 'operatore', 'lettore'] },
 ];
 
@@ -40,6 +43,7 @@ const VOCI_CONTRATTI = [
 
 const VOCI_ADMIN = [
   { path: '/admin/numerazione', label: 'Numerazione', icona: Hash },
+  { path: '/admin/titolario', label: 'Titolario', icona: FolderTree },
   { path: '/utenti', label: 'Gestione Utenti', icona: Users },
   { path: '/admin/importa', label: 'Importa backup', icona: FileArchive },
 ];

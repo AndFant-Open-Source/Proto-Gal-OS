@@ -23,9 +23,15 @@ export function useProtocolli() {
     setLoading(true);
     setErrore(null);
     try {
+      // Filtro per fascicolo: solo i protocolli collegati (join interna sui documenti del fascicolo)
+      const campi: string = filtri.fascicolo
+        ? '*, protocollo_allegati(*), protocollo_fascicoli_documenti!inner(fascicolo_id)'
+        : '*, protocollo_allegati(*)';
       let query = supabase
         .from('protocollo_registro')
-        .select('*, protocollo_allegati(*)', { count: 'exact' });
+        .select<string, Protocollo>(campi, { count: 'exact' });
+
+      if (filtri.fascicolo) query = query.eq('protocollo_fascicoli_documenti.fascicolo_id', filtri.fascicolo);
 
       if (filtri.anno) query = query.eq('anno', filtri.anno);
       if (filtri.tipo_flusso) query = query.eq('tipo_flusso', filtri.tipo_flusso);

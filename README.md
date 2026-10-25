@@ -37,6 +37,7 @@ cosa è stato modificato.
 - Allegati (PDF, P7M, documenti Office, immagini, e-mail) con stampigliatura del numero sui PDF
 - Blocco dei protocolli già comunicati e rinumerazione progressiva che li rispetta
 - Repertorio contratti con numerazione separata
+- Fascicoli (`F/0001/2026`) con titolario di classificazione, per raccogliere i documenti di una pratica
 - Ruoli: amministratore, operatore, lettore
 - Storico di ogni azione, esportazione in Excel e PDF, report
 

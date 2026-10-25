@@ -56,3 +56,4 @@ installazione:
 | File | Contenuto |
 |------|-----------|
 | `aggiornamenti/2026-10-importazione-backup.sql` | Funzione `protocollo_importa_backup` per la pagina «Importa backup» (solo admin) |
+| `aggiornamenti/2026-10-fascicoli.sql` | Titolario e fascicoli (da eseguire dopo il precedente) |

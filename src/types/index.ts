@@ -145,9 +145,11 @@ export interface LogAzione {
   id: string;
   protocollo_id?: string;
   contratto_id?: string;
+  fascicolo_id?: string;
   utente_id?: string;
   azione: string;
   dettaglio?: Record<string, unknown>;
+  numero_completo_rif?: string | null;
   ip_address?: string;
   created_at: string;
   profilo?: Profilo;
@@ -160,6 +162,8 @@ export interface FiltriProtocollo {
   stato?: StatoProtocollo | '';
   ufficio?: string;
   testo?: string;
+  /** id del fascicolo: solo i protocolli inseriti in quel fascicolo */
+  fascicolo?: string;
 }
 
 export interface StatisticheDashboard {
@@ -169,4 +173,69 @@ export interface StatisticheDashboard {
   arrivi_anno: number;
   partenze_anno: number;
   per_mese: { mese: string; arrivi: number; partenze: number }[];
+}
+
+// ── Titolario e fascicoli ─────────────────────────────────────────────────────
+
+export interface VoceTitolario {
+  id: string;
+  codice: string;
+  descrizione: string;
+  padre_id: string | null;
+  attivo: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type StatoFascicolo = 'aperto' | 'chiuso';
+
+export interface Fascicolo {
+  id: string;
+  numero: number;
+  anno: number;
+  /** F/NNNN/AAAA — colonna generata dal database */
+  numero_completo: string;
+  oggetto: string;
+  titolario_id: string | null;
+  responsabile: string | null;
+  ufficio: string | null;
+  stato: StatoFascicolo;
+  data_apertura: string;
+  data_chiusura: string | null;
+  riferimento_esterno: string | null;
+  note: string | null;
+  creato_da: string | null;
+  created_at: string;
+  updated_at: string;
+  titolario?: Pick<VoceTitolario, 'id' | 'codice' | 'descrizione'> | null;
+  /** Numero di documenti, quando richiesto con il conteggio */
+  documenti?: { count: number }[];
+}
+
+/** Campi compilabili (numero, anno, stato e autore li gestisce il database) */
+export type DatiFascicolo = Pick<
+  Fascicolo,
+  'oggetto' | 'titolario_id' | 'responsabile' | 'ufficio' | 'data_apertura' | 'riferimento_esterno' | 'note'
+>;
+
+export interface FiltriFascicolo {
+  anno?: number;
+  stato?: StatoFascicolo;
+  titolario_id?: string;
+  testo?: string;
+}
+
+/** Collegamento tra un fascicolo e un documento (protocollo oppure contratto) */
+export interface DocumentoFascicolo {
+  id: string;
+  fascicolo_id: string;
+  protocollo_id: string | null;
+  contratto_id: string | null;
+  inserito_da: string | null;
+  created_at: string;
+  protocollo?: (Pick<Protocollo, 'id' | 'numero_completo' | 'tipo_flusso' | 'data_registrazione' | 'oggetto' |
+    'mittente_nome' | 'destinatario_nome'> & { protocollo_allegati?: Allegato[] }) | null;
+  contratto?: (Pick<Contratto, 'id' | 'numero_completo' | 'data_repertorio' | 'oggetto' | 'contraente_nome'> &
+    { protocollo_contratti_allegati?: AllegatoContratto[] }) | null;
+  fascicolo?: Pick<Fascicolo, 'id' | 'numero_completo' | 'oggetto' | 'stato'> | null;
 }

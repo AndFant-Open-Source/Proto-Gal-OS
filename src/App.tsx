@@ -20,6 +20,9 @@ import DettaglioContratto from '@/pages/contratti/DettaglioContratto';
 import ModificaContratto from '@/pages/contratti/ModificaContratto';
 import CopyrightLicenza from '@/pages/CopyrightLicenza';
 import ImportaBackup from '@/pages/admin/ImportaBackup';
+import Titolario from '@/pages/admin/Titolario';
+import ElencoFascicoli from '@/pages/fascicoli/ElencoFascicoli';
+import DettaglioFascicolo from '@/pages/fascicoli/DettaglioFascicolo';
 
 function AccessoNonAbilitato({ onEsci }: { onEsci: () => Promise<void> }) {
   return (
@@ -180,6 +183,18 @@ function AppRoutes() {
             </Layout>
           </PrivateRoute>
         }
+      />
+      <Route
+        path="/fascicoli"
+        element={<PrivateRoute><Layout><ElencoFascicoli /></Layout></PrivateRoute>}
+      />
+      <Route
+        path="/fascicoli/:id"
+        element={<PrivateRoute><Layout><DettaglioFascicolo /></Layout></PrivateRoute>}
+      />
+      <Route
+        path="/admin/titolario"
+        element={<PrivateRoute soloAdmin><Layout><Titolario /></Layout></PrivateRoute>}
       />
       <Route
         path="/admin/importa"

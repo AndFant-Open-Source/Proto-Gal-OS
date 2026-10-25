@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Filter, X, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { UFFICI } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
-import type { FiltriProtocollo, TipoFlusso } from '@/types';
+import { getElencoFascicoli } from '@/hooks/useFascicoli';
+import type { Fascicolo, FiltriProtocollo, TipoFlusso } from '@/types';
 
 const annoCorrente = new Date().getFullYear();
 const ANNI = Array.from({ length: 5 }, (_, i) => annoCorrente - i);
@@ -57,6 +58,11 @@ export default function ListaProtocolli() {
     salvaTipo(user?.id, filtri.tipo_flusso || undefined);
   }, [user?.id, filtri.tipo_flusso]);
   const [mostraFiltri, setMostraFiltri] = useState(false);
+  const [fascicoli, setFascicoli] = useState<Pick<Fascicolo, 'id' | 'numero_completo' | 'oggetto' | 'stato'>[]>([]);
+
+  useEffect(() => {
+    getElencoFascicoli().then(setFascicoli).catch((err: unknown) => console.error(err));
+  }, []);
 
   const aggiorna = useCallback(() => {
     carica(filtri, pagina, ordinamento);
@@ -159,7 +165,7 @@ export default function ListaProtocolli() {
         </div>
 
         {mostraFiltri && (
-          <div className="grid grid-cols-2 gap-3 pt-2 border-t sm:grid-cols-4 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 pt-2 border-t sm:grid-cols-3 lg:grid-cols-6">
             <div>
               <label className="mb-1 block text-xs font-medium text-gray-500">Anno</label>
               <Select
@@ -242,6 +248,23 @@ export default function ListaProtocolli() {
                   <SelectItem value={TUTTI}>Tutti</SelectItem>
                   {UFFICI.map((u) => (
                     <SelectItem key={u} value={u}>{u}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-500">Fascicolo</label>
+              <Select
+                value={filtri.fascicolo || TUTTI}
+                onValueChange={(v) => handleFiltro('fascicolo', v)}
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Tutti" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={TUTTI}>Tutti</SelectItem>
+                  {fascicoli.map((f) => (
+                    <SelectItem key={f.id} value={f.id}>{f.numero_completo} — {f.oggetto}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

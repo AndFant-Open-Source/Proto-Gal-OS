@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatoBadge } from '@/components/StatoBadge';
+import { FascicoliDocumento } from '@/components/FascicoliDocumento';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import {
@@ -626,6 +627,11 @@ export default function DettaglioProtocollo() {
               </CardContent>
             </Card>
           )}
+
+          <FascicoliDocumento
+            documento={{ protocollo_id: protocollo.id }}
+            onCambio={() => { getLogAzioni(protocollo.id).then(setLog).catch((err: unknown) => console.error(err)); }}
+          />
 
           {/* Timeline */}
           <Card>
