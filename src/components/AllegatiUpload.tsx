@@ -25,7 +25,7 @@ export function AllegatiUpload({ files, onChange, disabled }: AllegatiUploadProp
       rejected.forEach(({ file, errors }) => {
         errors.forEach((e) => {
           if (e.code === 'file-too-large')
-            nuoviErrori.push(`${file.name}: supera i 20 MB`);
+            nuoviErrori.push(`${file.name}: supera i 50 MB`);
           else if (e.code === 'file-invalid-type')
             nuoviErrori.push(`${file.name}: formato non supportato`);
           else nuoviErrori.push(`${file.name}: ${e.message}`);
@@ -77,7 +77,7 @@ export function AllegatiUpload({ files, onChange, disabled }: AllegatiUploadProp
             : 'Trascina i file qui oppure clicca per selezionarli'}
         </p>
         <p className="mt-1 text-xs text-gray-400">
-          PDF, P7M, DOC, DOCX, XLS, XLSX, JPG, PNG, TIF, EML, MSG — max 20 MB per file
+          PDF, P7M, DOC, DOCX, XLS, XLSX, JPG, PNG, TIF, EML, MSG — max 50 MB per file
         </p>
       </div>
 

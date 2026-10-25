@@ -12,7 +12,7 @@ import { ChevronLeft, ChevronRight, Filter, X, ArrowDownCircle, ArrowUpCircle } 
 import { UFFICI } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { getElencoFascicoli } from '@/hooks/useFascicoli';
-import type { Fascicolo, FiltriProtocollo, TipoFlusso } from '@/types';
+import type { Fascicolo, FiltriProtocollo, Registro, TipoFlusso } from '@/types';
 
 const annoCorrente = new Date().getFullYear();
 const ANNI = Array.from({ length: 5 }, (_, i) => annoCorrente - i);
@@ -43,20 +43,36 @@ function salvaTipo(utenteId: string | undefined, tipo: TipoFlusso | undefined) {
   }
 }
 
-export default function ListaProtocolli() {
+interface ListaProtocolliProps {
+  /** Serie mostrata: registro ordinario (predefinito) o PEC */
+  registro?: Registro;
+  /** Per le pagine "PEC in entrata" / "PEC in uscita": tipo fisso, senza pulsanti rapidi */
+  tipoFisso?: TipoFlusso;
+}
+
+export default function ListaProtocolli({ registro = 'ordinario', tipoFisso }: ListaProtocolliProps) {
   const { protocolli, totale, loading, carica, pageSize } = useProtocolli();
   const { user } = useAuth();
   const [pagina, setPagina] = useState(0);
   const [ordinamento, setOrdinamento] = useState({ colonna: 'data_registrazione', ascendente: false });
-  const [filtri, setFiltri] = useState<FiltriProtocollo>(() => ({
+  const filtriIniziali = (): FiltriProtocollo => ({
+    registro,
     anno: annoCorrente,
-    tipo_flusso: leggiTipoSalvato(user?.id),
-  }));
+    tipo_flusso: tipoFisso ?? leggiTipoSalvato(user?.id),
+  });
+  const [filtri, setFiltri] = useState<FiltriProtocollo>(filtriIniziali);
+
+  // La stessa pagina serve PEC in entrata e in uscita: cambiando voce di menu si riparte
+  useEffect(() => {
+    setFiltri(filtriIniziali());
+    setPagina(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registro, tipoFisso]);
 
   // Memorizza ogni cambio di Arrivo/Partenza/Tutti (pulsanti, pannello Filtri o Reset)
   useEffect(() => {
-    salvaTipo(user?.id, filtri.tipo_flusso || undefined);
-  }, [user?.id, filtri.tipo_flusso]);
+    if (!tipoFisso) salvaTipo(user?.id, filtri.tipo_flusso || undefined);
+  }, [user?.id, filtri.tipo_flusso, tipoFisso]);
   const [mostraFiltri, setMostraFiltri] = useState(false);
   const [fascicoli, setFascicoli] = useState<Pick<Fascicolo, 'id' | 'numero_completo' | 'oggetto' | 'stato'>[]>([]);
 
@@ -86,13 +102,14 @@ export default function ListaProtocolli() {
   };
 
   const resettaFiltri = () => {
-    setFiltri({ anno: annoCorrente });
+    setFiltri({ registro, anno: annoCorrente, tipo_flusso: tipoFisso });
     setPagina(0);
   };
 
   const totalePagine = Math.ceil(totale / pageSize);
   // Filtri diversi da quello predefinito (anno corrente), per badge e pulsante Reset
   const filtriAttivi = (Object.keys(filtri) as (keyof FiltriProtocollo)[])
+    .filter((k) => k !== 'registro' && !(k === 'tipo_flusso' && tipoFisso))
     .filter((k) => (k === 'anno' ? filtri.anno !== annoCorrente : Boolean(filtri[k])))
     .length;
 
@@ -101,13 +118,18 @@ export default function ListaProtocolli() {
       {/* Header */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">Registro Protocolli</h1>
-          <p className="text-sm text-gray-500">{totale} documenti trovati</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {registro === 'pec' ? (tipoFisso === 'partenza' ? 'PEC in uscita' : 'PEC in entrata') : 'Registro Protocolli'}
+          </h1>
+          <p className="text-sm text-gray-500">
+            {totale} documenti trovati{registro === 'pec' ? ' — serie P-A / P-U, data di protocollo = data della PEC' : ''}
+          </p>
         </div>
-        <ExportButton anno={filtri.anno} />
+        <ExportButton anno={filtri.anno} registro={registro} />
       </div>
 
       {/* Selezione rapida Arrivo / Partenza (stesso filtro "Tipo" del pannello Filtri) */}
+      {!tipoFisso && (
       <div role="group" aria-label="Tipo di protocollo" className="inline-flex rounded-lg border bg-white p-1 shadow-sm">
         {([
           { valore: undefined, etichetta: 'Tutti', icona: null, attivo: 'bg-[#003399] text-white' },
@@ -131,6 +153,7 @@ export default function ListaProtocolli() {
           );
         })}
       </div>
+      )}
 
       {/* Barra ricerca + filtri */}
       <div className="rounded-lg border bg-white p-4 shadow-sm space-y-3">
@@ -183,6 +206,7 @@ export default function ListaProtocolli() {
                 </SelectContent>
               </Select>
             </div>
+            {!tipoFisso && (
             <div>
               <label className="mb-1 block text-xs font-medium text-gray-500">Tipo</label>
               <Select
@@ -199,6 +223,7 @@ export default function ListaProtocolli() {
                 </SelectContent>
               </Select>
             </div>
+            )}
             <div>
               <label className="mb-1 block text-xs font-medium text-gray-500">Canale</label>
               <Select
@@ -232,6 +257,7 @@ export default function ListaProtocolli() {
                   <SelectItem value="in_lavorazione">In lavorazione</SelectItem>
                   <SelectItem value="evaso">Evaso</SelectItem>
                   <SelectItem value="archiviato">Archiviato</SelectItem>
+                  <SelectItem value="annullato">Annullato</SelectItem>
                 </SelectContent>
               </Select>
             </div>

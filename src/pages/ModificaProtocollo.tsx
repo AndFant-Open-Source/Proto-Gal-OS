@@ -66,6 +66,12 @@ export default function ModificaProtocollo() {
     setCaricamento(true);
     getProtocollo(id)
       .then((p) => {
+        // Un protocollo annullato non si modifica (regola anche del database)
+        if (p.stato === 'annullato') {
+          toast.error('Protocollo annullato: non può essere modificato');
+          navigate(`/protocollo/${p.id}`, { replace: true });
+          return;
+        }
         setProtocollo(p);
         setTipoFlusso(p.tipo_flusso);
         setCanale(p.canale);
@@ -455,6 +461,8 @@ export default function ModificaProtocollo() {
                     >
                       <Download className="h-4 w-4" />
                     </button>
+                    {/* Allegati delle PEC: fissati dalla protocollazione, non si tolgono */}
+                    {protocollo.registro !== 'pec' && (
                     <button
                       type="button"
                       onClick={() => rimuoviAllegatoEsistente(a)}
@@ -463,6 +471,7 @@ export default function ModificaProtocollo() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -493,8 +502,12 @@ export default function ModificaProtocollo() {
               </div>
             )}
 
-            {/* Aggiungi nuovi allegati */}
-            <AllegatiUpload files={nuoviFiles} onChange={setNuoviFiles} disabled={loading} />
+            {/* Aggiungi nuovi allegati (non per i protocolli PEC: i file sono quelli della PEC) */}
+            {protocollo.registro === 'pec' ? (
+              <p className="text-xs text-gray-500">I file di un protocollo PEC sono quelli della PEC importata e non si modificano.</p>
+            ) : (
+              <AllegatiUpload files={nuoviFiles} onChange={setNuoviFiles} disabled={loading} />
+            )}
           </CardContent>
         </Card>
 

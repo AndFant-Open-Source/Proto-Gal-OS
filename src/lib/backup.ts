@@ -112,7 +112,9 @@ export function proponiMappa(utenti: UtenteBackup[], persone: { id: string; nome
 export async function trovaConflitti(backup: Backup): Promise<string[]> {
   const [protocolli, contratti] = await Promise.all([
     leggiTutto<{ id: string; anno: number; tipo_flusso: string; numero: number; numero_completo: string }>((da, a) =>
-      supabase.from('protocollo_registro').select('id, anno, tipo_flusso, numero, numero_completo').order('id').range(da, a)),
+      // I backup di Proto Gal contengono solo la serie ordinaria: la serie PEC non entra in conflitto
+      supabase.from('protocollo_registro').select('id, anno, tipo_flusso, numero, numero_completo')
+        .eq('registro', 'ordinario').order('id').range(da, a)),
     leggiTutto<{ id: string; anno: number; numero: number; numero_completo: string }>((da, a) =>
       supabase.from('protocollo_contratti').select('id, anno, numero, numero_completo').order('id').range(da, a)),
   ]);

@@ -22,6 +22,11 @@ import {
   FileArchive,
   FolderOpen,
   FolderTree,
+  Inbox,
+  MailCheck,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  DownloadCloud,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -39,6 +44,13 @@ const VOCI_PRINCIPALI = [
 const VOCI_CONTRATTI = [
   { path: '/contratti/nuovo', label: 'Nuovo Contratto', icona: FileSignature, ruoli: ['admin', 'operatore'] },
   { path: '/contratti', label: 'Repertorio Contratti', icona: ScrollText, ruoli: ['admin', 'operatore', 'lettore'] },
+];
+
+const VOCI_PEC = [
+  { path: '/pec/entrata', label: 'PEC in entrata', icona: ArrowDownCircle, ruoli: ['admin', 'operatore', 'lettore'] },
+  { path: '/pec/uscita', label: 'PEC in uscita', icona: ArrowUpCircle, ruoli: ['admin', 'operatore', 'lettore'] },
+  { path: '/pec/coda', label: 'Da protocollare', icona: Inbox, ruoli: ['admin', 'operatore', 'lettore'] },
+  { path: '/pec/importazioni', label: 'Importazioni', icona: DownloadCloud, ruoli: ['admin', 'operatore'] },
 ];
 
 const VOCI_ADMIN = [
@@ -79,6 +91,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     (v) => profilo && v.ruoli.includes(profilo.ruolo)
   );
   const vociContratti = VOCI_CONTRATTI.filter(
+    (v) => profilo && v.ruoli.includes(profilo.ruolo)
+  );
+  const vociPec = VOCI_PEC.filter(
     (v) => profilo && v.ruoli.includes(profilo.ruolo)
   );
 
@@ -155,6 +170,35 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   key={voce.path}
                   to={voce.path}
                   end
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                    }`
+                  }
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <voce.icona className="h-5 w-5 flex-shrink-0" />
+                  {voce.label}
+                </NavLink>
+              ))}
+            </>
+          )}
+
+          {/* Sezione Protocollo PEC */}
+          {vociPec.length > 0 && (
+            <>
+              <div className="mt-4 mb-1 flex items-center gap-2 px-3">
+                <MailCheck className="h-3.5 w-3.5 text-blue-300" />
+                <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+                  Protocollo PEC
+                </p>
+              </div>
+              {vociPec.map((voce) => (
+                <NavLink
+                  key={voce.path}
+                  to={voce.path}
                   className={({ isActive }) =>
                     `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                       isActive

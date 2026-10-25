@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { stampigliaPdf, nomeFileStampigliato } from '@/lib/stampigliatura';
 import { nomeFileSicuro, tipoMimeFile } from '@/lib/utils';
-import type { Protocollo, FiltriProtocollo, Allegato, LogAzione, DatiStampigliatura, AggiornamentoProtocollo } from '@/types';
+import type { Protocollo, FiltriProtocollo, Allegato, LogAzione, DatiStampigliatura, AggiornamentoProtocollo, Registro } from '@/types';
 
 const PAGE_SIZE = 20;
 
@@ -31,6 +31,7 @@ export function useProtocolli() {
         .from('protocollo_registro')
         .select<string, Protocollo>(campi, { count: 'exact' });
 
+      query = query.eq('registro', filtri.registro ?? 'ordinario');
       if (filtri.fascicolo) query = query.eq('protocollo_fascicoli_documenti.fascicolo_id', filtri.fascicolo);
 
       if (filtri.anno) query = query.eq('anno', filtri.anno);
@@ -83,7 +84,7 @@ export async function getProtocollo(id: string): Promise<Protocollo> {
 export async function creaProtocollo(
   dati: Omit<Protocollo,
     'id' | 'created_at' | 'updated_at' | 'protocollo_allegati' | 'numero_completo' |
-    'numero' | 'anno' | 'data_registrazione' | 'operatore_id'>
+    'numero' | 'anno' | 'data_registrazione' | 'operatore_id' | 'registro'>
 ): Promise<Protocollo> {
   const { data, error } = await supabase
     .from('protocollo_registro')
@@ -221,6 +222,23 @@ export async function logAzione(
   if (error) console.warn('Registrazione log azione fallita:', azione, error.message);
 }
 
+/** Annullamento (solo admin, motivo obbligatorio): il numero resta occupato e non si riassegna */
+export async function annullaProtocollo(id: string, motivo: string): Promise<void> {
+  const { error } = await supabase.rpc('protocollo_annulla', { p_protocollo_id: id, p_motivo: motivo });
+  if (error) throw error;
+}
+
+/** Dati utili per la timbratura di un protocollo (serie PEC con etichetta "PEC") */
+export function datiTimbro(p: Pick<Protocollo, 'numero_completo' | 'tipo_flusso' | 'registro'>, nomeEnte: string): DatiStampigliatura {
+  return {
+    nome_gal: nomeEnte,
+    numero_protocollo: p.numero_completo,
+    tipo_flusso: p.tipo_flusso,
+    registro: p.registro === 'pec' ? 'pec' : undefined,
+    data_stampa: new Date().toISOString(),
+  };
+}
+
 export async function getLogAzioni(protocolloId: string): Promise<LogAzione[]> {
   const { data, error } = await supabase
     .from('protocollo_log_azioni')
@@ -247,11 +265,12 @@ export async function leggiTutto<T>(
   }
 }
 
-export async function getTuttiProtocolli(anno?: number): Promise<Protocollo[]> {
+export async function getTuttiProtocolli(anno?: number, registro: Registro = 'ordinario'): Promise<Protocollo[]> {
   return leggiTutto<Protocollo>((da, a) => {
     let query = supabase
       .from('protocollo_registro')
       .select('*')
+      .eq('registro', registro)
       .order('tipo_flusso', { ascending: true })
       .order('numero', { ascending: true });
     if (anno) query = query.eq('anno', anno);

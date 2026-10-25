@@ -57,3 +57,7 @@ installazione:
 |------|-----------|
 | `aggiornamenti/2026-10-importazione-backup.sql` | Funzione `protocollo_importa_backup` per la pagina «Importa backup» (solo admin) |
 | `aggiornamenti/2026-10-fascicoli.sql` | Titolario e fascicoli (da eseguire dopo il precedente) |
+| `aggiornamenti/2026-10-protocollo-pec.sql` | Protocollo PEC, annullamento, allegati fino a 50 MB (da eseguire dopo il precedente) |
+
+La funzione `functions/pec-importa` (importazione delle PEC da Google Drive) si installa a parte:
+vedi [docs/protocollo-pec.md](../docs/protocollo-pec.md).

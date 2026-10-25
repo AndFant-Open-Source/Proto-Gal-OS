@@ -4,7 +4,9 @@
 export type Ruolo = 'admin' | 'operatore' | 'lettore';
 export type TipoFlusso = 'arrivo' | 'partenza';
 export type Canale = 'pec' | 'email' | 'cartaceo' | 'digitale';
-export type StatoProtocollo = 'ricevuto' | 'in_lavorazione' | 'evaso' | 'archiviato';
+export type StatoProtocollo = 'ricevuto' | 'in_lavorazione' | 'evaso' | 'archiviato' | 'annullato';
+/** ordinario: A/… U/… · pec: P-A/… P-U/… (dalla coda PEC) */
+export type Registro = 'ordinario' | 'pec';
 
 export interface Profilo {
   id: string;
@@ -21,13 +23,14 @@ export interface Profilo {
 export interface DatiStampigliatura {
   nome_gal: string;
   numero_protocollo: string;
-  /** Per i contratti: etichetta mostrata al posto di Arrivo/Partenza */
-  registro?: 'protocollo' | 'repertorio';
+  /** Contratti: "Rep." al posto di Arrivo/Partenza · PEC: "PEC Arrivo"/"PEC Partenza" */
+  registro?: 'protocollo' | 'repertorio' | 'pec';
   tipo_flusso?: 'arrivo' | 'partenza';
   data_stampa: string;
 }
 
 export interface SequenzaNumerazione {
+  registro?: Registro;
   anno: number;
   tipo_flusso: 'arrivo' | 'partenza';
   ultimo_numero: number;
@@ -35,6 +38,7 @@ export interface SequenzaNumerazione {
 
 export interface Protocollo {
   id: string;
+  registro: Registro;
   numero: number;
   anno: number;
   numero_completo: string;
@@ -76,6 +80,10 @@ export interface Allegato {
   dimensione_bytes?: number;
   tipo_mime?: string;
   caricato_da?: string;
+  /** Solo protocolli PEC: impronta, ruolo e ordine originale del file */
+  sha256?: string | null;
+  origine?: 'pdf_pec' | 'allegato' | 'eml' | null;
+  posizione?: number | null;
   created_at: string;
 }
 
@@ -156,6 +164,8 @@ export interface LogAzione {
 }
 
 export interface FiltriProtocollo {
+  /** Serie: ordinaria se non indicata */
+  registro?: Registro;
   anno?: number;
   tipo_flusso?: TipoFlusso | '';
   canale?: Canale | '';
@@ -233,9 +243,77 @@ export interface DocumentoFascicolo {
   contratto_id: string | null;
   inserito_da: string | null;
   created_at: string;
-  protocollo?: (Pick<Protocollo, 'id' | 'numero_completo' | 'tipo_flusso' | 'data_registrazione' | 'oggetto' |
+  protocollo?: (Pick<Protocollo, 'id' | 'registro' | 'numero_completo' | 'tipo_flusso' | 'data_registrazione' | 'oggetto' |
     'mittente_nome' | 'destinatario_nome'> & { protocollo_allegati?: Allegato[] }) | null;
   contratto?: (Pick<Contratto, 'id' | 'numero_completo' | 'data_repertorio' | 'oggetto' | 'contraente_nome'> &
     { protocollo_contratti_allegati?: AllegatoContratto[] }) | null;
   fascicolo?: Pick<Fascicolo, 'id' | 'numero_completo' | 'oggetto' | 'stato'> | null;
+}
+
+// ── Protocollo PEC ────────────────────────────────────────────────────────────
+
+export type StatoPec = 'da_verificare' | 'pronto' | 'anomalia' | 'protocollato' | 'scartato';
+
+export interface FilePec {
+  id: string;
+  messaggio_id: string;
+  ruolo: 'eml' | 'pdf' | 'allegato';
+  posizione: number;
+  nome_file: string;
+  storage_path: string;
+  dimensione_bytes: number | null;
+  tipo_mime: string | null;
+  sha256: string | null;
+  generato: boolean;
+  created_at: string;
+}
+
+export interface MessaggioPec {
+  id: string;
+  id_acquisizione: string;
+  tipo: 'messaggio' | 'ricevuta';
+  direzione: TipoFlusso | null;
+  direzione_proposta: string | null;
+  mittente: string | null;
+  destinatari: string | null;
+  cc: string | null;
+  oggetto: string | null;
+  corpo_anteprima: string | null;
+  message_id: string | null;
+  sha256_eml: string | null;
+  data_email: string | null;
+  data_certificata: string | null;
+  /** Data usata per il protocollo: certificata se presente, altrimenti dell'email */
+  data_pec: string | null;
+  tipo_certificazione: string | null;
+  riferimento_message_id: string | null;
+  ricevuta_di: string | null;
+  stato: StatoPec;
+  anomalie: string[];
+  avvisi: string[];
+  note_verifica: string | null;
+  drive_cartella: string | null;
+  numero_allegati_indice: number | null;
+  protocollo_id: string | null;
+  importazione_id: string | null;
+  importato_il: string;
+  verificato_da: string | null;
+  verificato_il: string | null;
+  created_at: string;
+  updated_at: string;
+  protocollo_pec_file?: FilePec[];
+}
+
+export interface ImportazionePec {
+  id: string;
+  avviata_da: string | null;
+  avviata_il: string;
+  conclusa_il: string | null;
+  stato: 'in_corso' | 'completata' | 'interrotta';
+  righe_indice: number;
+  nuove: number;
+  gia_presenti: number;
+  anomalie: number;
+  errore: string | null;
+  profilo?: Pick<Profilo, 'nome_completo'> | null;
 }

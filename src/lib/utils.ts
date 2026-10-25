@@ -42,6 +42,7 @@ export const LABEL_STATO: Record<StatoProtocollo, string> = {
   in_lavorazione: 'In lavorazione',
   evaso: 'Evaso',
   archiviato: 'Archiviato',
+  annullato: 'Annullato',
 };
 
 export const LABEL_CANALE: Record<Canale, string> = {
@@ -124,6 +125,7 @@ export const COLORE_STATO: Record<StatoProtocollo, string> = {
   in_lavorazione: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   evaso: 'bg-green-100 text-green-800 border-green-200',
   archiviato: 'bg-gray-100 text-gray-700 border-gray-200',
+  annullato: 'bg-red-50 text-red-700 border-red-200 line-through',
 };
 
 export const MESI_IT = [
@@ -168,4 +170,4 @@ export const FORMATI_ALLEGATI_ACCETTATI = {
   'application/pkcs7-mime': ['.p7m'],
 };
 
-export const DIMENSIONE_MAX_ALLEGATO = 20 * 1024 * 1024; // 20MB
+export const DIMENSIONE_MAX_ALLEGATO = 50 * 1024 * 1024; // 50 MB, come il limite dell'archivio

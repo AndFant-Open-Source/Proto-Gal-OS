@@ -3,7 +3,7 @@
 // Termini aggiuntivi (AGPL-3.0, sezione 7): vedi TERMINI-AGGIUNTIVI.md
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FilePlus, TrendingUp, TrendingDown, FileText, Calendar } from 'lucide-react';
+import { FilePlus, TrendingUp, TrendingDown, FileText, Calendar, Inbox } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<StatisticheDashboard | null>(null);
   const [ultimi, setUltimi] = useState<Protocollo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pec, setPec] = useState<{ daProtocollare: number; protocollateAnno: number } | null>(null);
 
   useEffect(() => {
     const carica = async () => {
@@ -32,17 +33,19 @@ export default function Dashboard() {
         const inizioOggi = new Date(oggi.getFullYear(), oggi.getMonth(), oggi.getDate()).toISOString();
         const inizioMese = new Date(oggi.getFullYear(), oggi.getMonth(), 1).toISOString();
 
-        const reg = () => supabase.from('protocollo_registro');
+        // Statistiche della serie ordinaria; le PEC hanno il loro riquadro
+        const conta = () => supabase.from('protocollo_registro')
+          .select('*', { count: 'exact', head: true }).eq('registro', 'ordinario');
 
         const [{ count: totOggi }, { count: totMese }, { count: totAnno }] = await Promise.all([
-          reg().select('*', { count: 'exact', head: true }).gte('data_registrazione', inizioOggi).eq('anno', annoCorrente),
-          reg().select('*', { count: 'exact', head: true }).gte('data_registrazione', inizioMese).eq('anno', annoCorrente),
-          reg().select('*', { count: 'exact', head: true }).eq('anno', annoCorrente),
+          conta().gte('data_registrazione', inizioOggi).eq('anno', annoCorrente),
+          conta().gte('data_registrazione', inizioMese).eq('anno', annoCorrente),
+          conta().eq('anno', annoCorrente),
         ]);
 
         const [{ count: arrivi }, { count: partenze }] = await Promise.all([
-          reg().select('*', { count: 'exact', head: true }).eq('anno', annoCorrente).eq('tipo_flusso', 'arrivo'),
-          reg().select('*', { count: 'exact', head: true }).eq('anno', annoCorrente).eq('tipo_flusso', 'partenza'),
+          conta().eq('anno', annoCorrente).eq('tipo_flusso', 'arrivo'),
+          conta().eq('anno', annoCorrente).eq('tipo_flusso', 'partenza'),
         ]);
 
         // Dati per mese
@@ -51,8 +54,8 @@ export default function Dashboard() {
             const inizio = new Date(annoCorrente, mese, 1).toISOString();
             const fine = new Date(annoCorrente, mese + 1, 0, 23, 59, 59).toISOString();
             const [{ count: a }, { count: p }] = await Promise.all([
-              reg().select('*', { count: 'exact', head: true }).eq('anno', annoCorrente).eq('tipo_flusso', 'arrivo').gte('data_registrazione', inizio).lte('data_registrazione', fine),
-              reg().select('*', { count: 'exact', head: true }).eq('anno', annoCorrente).eq('tipo_flusso', 'partenza').gte('data_registrazione', inizio).lte('data_registrazione', fine),
+              conta().eq('anno', annoCorrente).eq('tipo_flusso', 'arrivo').gte('data_registrazione', inizio).lte('data_registrazione', fine),
+              conta().eq('anno', annoCorrente).eq('tipo_flusso', 'partenza').gte('data_registrazione', inizio).lte('data_registrazione', fine),
             ]);
             return { mese: MESI_IT[mese], arrivi: a ?? 0, partenze: p ?? 0 };
           })
@@ -75,6 +78,15 @@ export default function Dashboard() {
           .limit(5);
         const { data: ultimiData } = await ultimiQ;
         setUltimi((ultimiData ?? []) as Protocollo[]);
+
+        // Protocollo PEC: coda e PEC protocollate nell'anno (il riquadro compare solo se usato)
+        const [coda, pecAnno] = await Promise.all([
+          supabase.from('protocollo_pec_messaggi').select('id', { count: 'exact', head: true })
+            .eq('tipo', 'messaggio').in('stato', ['da_verificare', 'pronto', 'anomalia']),
+          supabase.from('protocollo_registro').select('id', { count: 'exact', head: true })
+            .eq('registro', 'pec').eq('anno', annoCorrente),
+        ]);
+        if (!coda.error && !pecAnno.error) setPec({ daProtocollare: coda.count ?? 0, protocollateAnno: pecAnno.count ?? 0 });
       } catch {
         toast.error('Errore nel caricamento della dashboard');
       } finally {
@@ -107,6 +119,18 @@ export default function Dashboard() {
           Nuovo Protocollo
         </Button>
       </div>
+
+      {pec && (pec.daProtocollare > 0 || pec.protocollateAnno > 0) && (
+        <button
+          type="button"
+          onClick={() => navigate('/pec/coda')}
+          className="flex w-full flex-wrap items-center gap-x-6 gap-y-1 rounded-xl border border-purple-200 bg-purple-50 px-5 py-3 text-left text-sm text-purple-900 hover:bg-purple-100"
+        >
+          <Inbox className="h-5 w-5 text-purple-700" />
+          <span><strong className="text-lg">{pec.daProtocollare}</strong> PEC da protocollare</span>
+          <span><strong>{pec.protocollateAnno}</strong> PEC protocollate nel {annoCorrente} (serie P-A / P-U)</span>
+        </button>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">

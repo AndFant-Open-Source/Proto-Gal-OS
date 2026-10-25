@@ -53,10 +53,12 @@ export async function stampigliaPdf(
 
     // --- Contenuto testuale ---
     // Solo il numero (la data non viene stampigliata).
-    // Protocollo: "Prot. A/0015/2026  (Arrivo)" — Repertorio: "Rep. C/0001/2026  (Contratto)"
+    // Protocollo: "Prot. A/0015/2026  (Arrivo)" — PEC: "Prot. P-A/0001/2026  (PEC Arrivo)"
+    // — Repertorio: "Rep. C/0001/2026  (Contratto)"
+    const flusso = dati.tipo_flusso === 'arrivo' ? 'Arrivo' : 'Partenza';
     const riga1 = dati.registro === 'repertorio'
       ? `Rep. ${dati.numero_protocollo}  (Contratto)`
-      : `Prot. ${dati.numero_protocollo}  (${dati.tipo_flusso === 'arrivo' ? 'Arrivo' : 'Partenza'})`;
+      : `Prot. ${dati.numero_protocollo}  (${dati.registro === 'pec' ? `PEC ${flusso}` : flusso})`;
     const riga2 = dati.nome_gal;
 
     const size1 = 7.5;

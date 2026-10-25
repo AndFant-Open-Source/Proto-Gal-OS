@@ -10,6 +10,7 @@ import { NOME_ENTE } from '@/lib/ente';
 import { stampigliaPdf, nomeFileStampigliato } from '@/lib/stampigliatura';
 import { formatData, LABEL_FLUSSO } from '@/lib/utils';
 import { dataDocumento } from '@/hooks/useFascicoli';
+import { datiTimbro } from '@/hooks/useProtocolli';
 import type { DatiStampigliatura, DocumentoFascicolo, Fascicolo } from '@/types';
 
 export interface AvanzamentoZip {
@@ -81,7 +82,7 @@ export async function creaZipFascicolo(
     const numero = d.protocollo?.numero_completo ?? d.contratto?.numero_completo ?? 'documento';
     const cartella = `${String(i + 1).padStart(3, '0')}_${numero.replace(/\//g, '-')}`;
     const timbro: DatiStampigliatura = d.protocollo
-      ? { nome_gal: NOME_ENTE, numero_protocollo: numero, tipo_flusso: d.protocollo.tipo_flusso, data_stampa: new Date().toISOString() }
+      ? datiTimbro(d.protocollo, NOME_ENTE)
       : { nome_gal: NOME_ENTE, numero_protocollo: numero, registro: 'repertorio', data_stampa: new Date().toISOString() };
     for (const a of d.protocollo?.protocollo_allegati ?? d.contratto?.protocollo_contratti_allegati ?? []) {
       file.push({ cartella, nome_file: a.nome_file, storage_path: a.storage_path, tipo_mime: a.tipo_mime, timbro });

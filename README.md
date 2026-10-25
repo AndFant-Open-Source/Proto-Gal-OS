@@ -38,6 +38,8 @@ cosa è stato modificato.
 - Blocco dei protocolli già comunicati e rinumerazione progressiva che li rispetta
 - Repertorio contratti con numerazione separata
 - Fascicoli (`F/0001/2026`) con titolario di classificazione, per raccogliere i documenti di una pratica
+- Protocollo PEC (`P-A/…`, `P-U/…`) importato da Google Drive, con data di protocollo uguale alla data della PEC ([guida](docs/protocollo-pec.md))
+- Annullamento dei protocolli con motivo, senza riuso del numero
 - Ruoli: amministratore, operatore, lettore
 - Storico di ogni azione, esportazione in Excel e PDF, report
 
@@ -49,6 +51,7 @@ cosa è stato modificato.
 |-----------|-----------|
 | [docs/installazione.md](docs/installazione.md) | Installazione da zero, sviluppo, produzione, configurazione |
 | [docs/architettura.md](docs/architettura.md) | Come è fatto il software e dove stanno le regole di sicurezza |
+| [docs/protocollo-pec.md](docs/protocollo-pec.md) | Protocollo PEC: uso, installazione dell'importazione da Google Drive |
 | [supabase/README.md](supabase/README.md) | Struttura del database, permessi e regole di sicurezza |
 | [docs/licenza-e-titolarita.md](docs/licenza-e-titolarita.md) | Licenza, titolarità e passi per il rilascio |
 | [docs/conformita-linee-guida-agid.md](docs/conformita-linee-guida-agid.md) | Verifica rispetto alle Linee guida AgID sul riuso |

@@ -23,6 +23,8 @@ import ImportaBackup from '@/pages/admin/ImportaBackup';
 import Titolario from '@/pages/admin/Titolario';
 import ElencoFascicoli from '@/pages/fascicoli/ElencoFascicoli';
 import DettaglioFascicolo from '@/pages/fascicoli/DettaglioFascicolo';
+import CodaPec from '@/pages/pec/CodaPec';
+import ImportazioniPec from '@/pages/pec/ImportazioniPec';
 
 function AccessoNonAbilitato({ onEsci }: { onEsci: () => Promise<void> }) {
   return (
@@ -183,6 +185,22 @@ function AppRoutes() {
             </Layout>
           </PrivateRoute>
         }
+      />
+      <Route
+        path="/pec/entrata"
+        element={<PrivateRoute><Layout><ListaProtocolli registro="pec" tipoFisso="arrivo" /></Layout></PrivateRoute>}
+      />
+      <Route
+        path="/pec/uscita"
+        element={<PrivateRoute><Layout><ListaProtocolli registro="pec" tipoFisso="partenza" /></Layout></PrivateRoute>}
+      />
+      <Route
+        path="/pec/coda"
+        element={<PrivateRoute><Layout><CodaPec /></Layout></PrivateRoute>}
+      />
+      <Route
+        path="/pec/importazioni"
+        element={<PrivateRoute soloOperatore><Layout><ImportazioniPec /></Layout></PrivateRoute>}
       />
       <Route
         path="/fascicoli"

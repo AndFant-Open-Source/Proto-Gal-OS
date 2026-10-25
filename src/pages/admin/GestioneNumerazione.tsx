@@ -25,6 +25,7 @@ async function trovaLacune(anno: number, tipo: TipoFlusso): Promise<LacunaInfo |
     supabase
       .from('protocollo_registro')
       .select('numero')
+      .eq('registro', 'ordinario')
       .eq('anno', anno)
       .eq('tipo_flusso', tipo)
       .order('numero')
@@ -50,8 +51,8 @@ export default function GestioneNumerazione() {
     setLoading(true);
     try {
       const [seq, seqContratti, ...lacuneAnno] = await Promise.all([
-        supabase.from('protocollo_sequenze').select('anno, tipo_flusso, ultimo_numero')
-          .order('anno', { ascending: false }).order('tipo_flusso'),
+        supabase.from('protocollo_sequenze').select('registro, anno, tipo_flusso, ultimo_numero')
+          .order('anno', { ascending: false }).order('registro').order('tipo_flusso'),
         supabase.from('protocollo_contratti_sequenze').select('anno, ultimo_numero')
           .order('anno', { ascending: false }),
         trovaLacune(annoCorrente, 'arrivo'),
@@ -192,20 +193,23 @@ export default function GestioneNumerazione() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {sequenze.map((seq) => (
-                <tr key={`${seq.anno}-${seq.tipo_flusso}`} className="hover:bg-gray-50">
+                <tr key={`${seq.registro}-${seq.anno}-${seq.tipo_flusso}`} className="hover:bg-gray-50">
                   <td className="px-5 py-3 font-medium text-gray-900">{seq.anno}</td>
                   <td className="px-5 py-3">
                     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
                       seq.tipo_flusso === 'arrivo' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'
                     }`}>
                       {seq.tipo_flusso === 'arrivo' ? <ArrowDownCircle size={11} /> : <ArrowUpCircle size={11} />}
-                      {ETICHETTA[seq.tipo_flusso]}
+                      {seq.registro === 'pec' ? 'PEC ' : ''}{ETICHETTA[seq.tipo_flusso]}
                     </span>
                   </td>
                   <td className="px-5 py-3 text-right font-mono text-gray-700">
-                    {formatNumeroCompleto(seq.anno, seq.ultimo_numero, seq.tipo_flusso)}
+                    {formatNumeroCompleto(seq.anno, seq.ultimo_numero, seq.tipo_flusso, seq.registro)}
                   </td>
                   <td className="px-5 py-3 text-right">
+                    {seq.registro === 'pec' ? (
+                      <span className="text-xs text-gray-400" title="I protocolli PEC sono sempre bloccati">Non rinumerabile</span>
+                    ) : (
                     <button
                       onClick={() => rinumeraProgressivamente(seq.anno, seq.tipo_flusso)}
                       disabled={elaborando}
@@ -213,6 +217,7 @@ export default function GestioneNumerazione() {
                     >
                       Rinumera progressivamente
                     </button>
+                    )}
                   </td>
                 </tr>
               ))}

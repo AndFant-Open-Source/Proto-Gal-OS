@@ -5,8 +5,10 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Download, Printer, Edit2, Clock, Paperclip, Link,
-  ArrowDownCircle, ArrowUpCircle, Mail, Send, FileText, Monitor, Trash2, Stamp, Hash, Eye, Lock,
+  ArrowDownCircle, ArrowUpCircle, Mail, Send, FileText, Monitor, Trash2, Stamp, Hash, Eye, Lock, Ban,
 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { PannelloPec } from '@/components/PannelloPec';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,6 +19,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   getProtocollo, getLogAzioni, downloadAllegato, downloadAllegatoStampigliato,
   eliminaAllegato, eliminaProtocollo, aggiornaProtocollo, logAzione, visualizzaAllegato,
+  annullaProtocollo, datiTimbro,
 } from '@/hooks/useProtocolli';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
@@ -49,6 +52,9 @@ export default function DettaglioProtocollo() {
   const [nuovaData, setNuovaData] = useState('');
   const [salvandoNumero, setSalvandoNumero] = useState(false);
   const [cambiandoBlocco, setCambiandoBlocco] = useState(false);
+  const [modaleAnnulla, setModaleAnnulla] = useState(false);
+  const [motivoAnnullamento, setMotivoAnnullamento] = useState('');
+  const [annullando, setAnnullando] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -100,15 +106,32 @@ export default function DettaglioProtocollo() {
   const handleDownloadStampigliato = async (allegato: Allegato) => {
     if (!protocollo) return;
     try {
-      await downloadAllegatoStampigliato(allegato, {
-        nome_gal: NOME_ENTE,
-        numero_protocollo: protocollo.numero_completo,
-        tipo_flusso: protocollo.tipo_flusso,
-        data_stampa: new Date().toISOString(),
-      });
+      await downloadAllegatoStampigliato(allegato, datiTimbro(protocollo, NOME_ENTE));
       toast.success(`Download con stampigliatura avviato`);
     } catch {
       toast.error('Errore durante il download con stampigliatura');
+    }
+  };
+
+  // Annullamento: solo admin, motivo obbligatorio; il numero resta occupato (protocollo_annulla)
+  const confermaAnnullamento = async () => {
+    if (!protocollo) return;
+    if (motivoAnnullamento.trim().length < 5) {
+      toast.error("Indica il motivo dell'annullamento (almeno 5 caratteri)");
+      return;
+    }
+    setAnnullando(true);
+    try {
+      await annullaProtocollo(protocollo.id, motivoAnnullamento.trim());
+      const [p, l] = await Promise.all([getProtocollo(protocollo.id), getLogAzioni(protocollo.id)]);
+      setProtocollo(p);
+      setLog(l);
+      setModaleAnnulla(false);
+      toast.success(`Protocollo ${protocollo.numero_completo} annullato`);
+    } catch {
+      toast.error('Annullamento non riuscito: operazione riservata agli amministratori');
+    } finally {
+      setAnnullando(false);
     }
   };
 
@@ -292,6 +315,12 @@ export default function DettaglioProtocollo() {
     );
   }
 
+  const pec = protocollo.registro === 'pec';
+  const annullato = protocollo.stato === 'annullato';
+  const motivoAnnullato = log.find((l) => l.azione === 'ANNULLAMENTO')?.dettaglio?.motivo;
+  const allegatiOrdinati = [...(protocollo.protocollo_allegati ?? [])]
+    .sort((x, y) => (x.posizione ?? 0) - (y.posizione ?? 0) || x.created_at.localeCompare(y.created_at));
+
   return (
     <div className="mx-auto w-full max-w-6xl min-w-0 space-y-5 pb-8 [overflow-wrap:anywhere]">
       {/* Header */}
@@ -315,9 +344,15 @@ export default function DettaglioProtocollo() {
                 Bloccato
               </span>
             )}
+            {pec && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-800">
+                <Send className="h-3 w-3" />
+                Protocollo PEC
+              </span>
+            )}
           </div>
           <p className="text-sm text-gray-500">
-            Registrato il {formatData(protocollo.data_registrazione, true)}
+            {pec ? 'Data della PEC' : 'Registrato il'} {formatData(protocollo.data_registrazione, true)}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -325,7 +360,7 @@ export default function DettaglioProtocollo() {
             <Printer className="mr-2 h-4 w-4" />
             Stampa
           </Button>
-          {isAdmin && (
+          {isAdmin && !pec && !annullato && (
             <Button
               variant="outline"
               size="sm"
@@ -337,13 +372,24 @@ export default function DettaglioProtocollo() {
               Modifica numero / data
             </Button>
           )}
-          {isOperatore && (
+          {isAdmin && !annullato && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-300 text-red-600 hover:border-red-400 hover:bg-red-50"
+              onClick={() => { setMotivoAnnullamento(''); setModaleAnnulla(true); }}
+            >
+              <Ban className="mr-2 h-4 w-4" />
+              Annulla protocollo
+            </Button>
+          )}
+          {isOperatore && !annullato && (
             <Button size="sm" onClick={() => navigate(`/modifica/${protocollo.id}`)}>
               <Edit2 className="mr-2 h-4 w-4" />
               Modifica
             </Button>
           )}
-          {isAdmin && (
+          {isAdmin && !pec && !annullato && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
@@ -380,6 +426,17 @@ export default function DettaglioProtocollo() {
           )}
         </div>
       </div>
+
+      {annullato && (
+        <div className="flex gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <Ban className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <div>
+            <p className="font-semibold">Protocollo annullato</p>
+            {typeof motivoAnnullato === 'string' && <p>Motivo: {motivoAnnullato}</p>}
+            <p className="text-xs">Il numero resta registrato e non viene riassegnato. Il protocollo non è più modificabile.</p>
+          </div>
+        </div>
+      )}
 
       {/* Due colonne solo da schermi larghi (xl): sotto, tutto in colonna unica
           per non tagliare né comprimere i contenuti */}
@@ -472,6 +529,8 @@ export default function DettaglioProtocollo() {
             </CardContent>
           </Card>
 
+          {pec && <PannelloPec protocollo={protocollo} />}
+
           {/* Allegati */}
           <Card>
             <CardHeader>
@@ -486,16 +545,20 @@ export default function DettaglioProtocollo() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {!protocollo.protocollo_allegati?.length ? (
+              {allegatiOrdinati.length === 0 ? (
                 <p className="text-sm text-gray-400">Nessun allegato</p>
               ) : (
                 <ul className="space-y-2">
-                  {protocollo.protocollo_allegati.map((a) => {
+                  {allegatiOrdinati.map((a) => {
                     const isPdf = a.tipo_mime === 'application/pdf' || a.nome_file.toLowerCase().endsWith('.pdf');
                     return (
                       <li key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border bg-gray-50 px-3 py-2 text-sm">
                         <FileText className="h-4 w-4 flex-shrink-0 text-gray-500" />
-                        <span className="min-w-0 flex-1 basis-40 truncate" title={a.nome_file}>{a.nome_file}</span>
+                        <span className="min-w-0 flex-1 basis-40 truncate" title={a.nome_file}>
+                          {a.origine === 'pdf_pec' && <span className="mr-1.5 rounded bg-purple-50 px-1.5 py-0.5 text-xs font-medium text-purple-700">PDF della PEC</span>}
+                          {a.origine === 'eml' && <span className="mr-1.5 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-medium text-gray-700">EML originale</span>}
+                          {a.nome_file}
+                        </span>
                         <span className="ml-auto flex flex-shrink-0 items-center">
                         <span className="mr-1 text-xs text-gray-400">{formatBytes(a.dimensione_bytes)}</span>
                         {isPdf && (
@@ -524,7 +587,7 @@ export default function DettaglioProtocollo() {
                         >
                           <Download className="h-4 w-4" />
                         </Button>
-                        {isOperatore && (
+                        {isOperatore && !pec && !annullato && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-600">
@@ -573,7 +636,7 @@ export default function DettaglioProtocollo() {
             <CardContent className="space-y-2">
               <label
                 className={`flex items-start gap-3 ${
-                  isOperatore && !(protocollo.bloccato && !isAdmin) && !cambiandoBlocco
+                  isOperatore && !(protocollo.bloccato && !isAdmin) && !cambiandoBlocco && !pec && !annullato
                     ? 'cursor-pointer'
                     : 'cursor-not-allowed opacity-70'
                 }`}
@@ -582,7 +645,7 @@ export default function DettaglioProtocollo() {
                   type="checkbox"
                   className="mt-0.5 h-4 w-4 accent-[#003399]"
                   checked={protocollo.bloccato}
-                  disabled={!isOperatore || (protocollo.bloccato && !isAdmin) || cambiandoBlocco}
+                  disabled={!isOperatore || (protocollo.bloccato && !isAdmin) || cambiandoBlocco || pec || annullato}
                   onChange={(e) => cambiaBlocco(e.target.checked)}
                 />
                 <span className="text-sm font-medium text-gray-800">
@@ -590,7 +653,11 @@ export default function DettaglioProtocollo() {
                 </span>
               </label>
               <p className="text-xs text-gray-500">
-                {protocollo.bloccato
+                {pec
+                  ? 'I protocolli PEC restano sempre bloccati: numero, tipo e data (quella della PEC) non si modificano.'
+                  : annullato
+                  ? 'Protocollo annullato: il numero resta bloccato.'
+                  : protocollo.bloccato
                   ? `Bloccato il ${formatData(protocollo.bloccato_il ?? undefined, true)}. La rinumerazione non ne cambierà il numero.` +
                     (isAdmin ? '' : ' Solo un amministratore può sbloccarlo.')
                   : 'Se bloccato, la rinumerazione non ne cambierà il numero. Consigliato per le comunicazioni già inviate.'}
@@ -599,7 +666,7 @@ export default function DettaglioProtocollo() {
           </Card>
 
           {/* Cambio stato */}
-          {isOperatore && (
+          {isOperatore && !annullato && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Stato</CardTitle>
@@ -666,6 +733,42 @@ export default function DettaglioProtocollo() {
           </Card>
         </div>
       </div>
+
+      {/* Annullamento (solo admin) */}
+      <AlertDialog open={modaleAnnulla} onOpenChange={(v) => { if (!annullando) setModaleAnnulla(v); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Annullare il protocollo {protocollo.numero_completo}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              L'annullamento è definitivo: il protocollo resta nel registro con il suo numero, che non verrà
+              riassegnato, ma non potrà più essere modificato né eliminato. Il motivo resta nello storico.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-1.5">
+            <Label htmlFor="motivoAnnullamento">Motivo dell'annullamento *</Label>
+            <Textarea
+              id="motivoAnnullamento"
+              rows={3}
+              value={motivoAnnullamento}
+              onChange={(e) => setMotivoAnnullamento(e.target.value)}
+              placeholder="Es. registrazione doppia del protocollo P-A/0012/2026"
+            />
+            {motivoAnnullamento.length > 0 && motivoAnnullamento.trim().length < 5 && (
+              <p className="text-xs text-red-600">Almeno 5 caratteri</p>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={annullando}>Indietro</AlertDialogCancel>
+            <Button
+              className="bg-red-600 hover:bg-red-700"
+              onClick={confermaAnnullamento}
+              disabled={annullando || motivoAnnullamento.trim().length < 5}
+            >
+              {annullando ? 'Annullamento…' : 'Annulla definitivamente'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Modale Modifica Numero e Data di protocollazione (solo admin) */}
       {modaleNumero && (

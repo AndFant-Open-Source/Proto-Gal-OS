@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportButton } from '@/components/ExportButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MESI_IT, LABEL_CANALE } from '@/lib/utils';
-import type { Canale } from '@/types';
+import type { Canale, Registro } from '@/types';
 
 const annoCorrente = new Date().getFullYear();
 const ANNI = Array.from({ length: 5 }, (_, i) => annoCorrente - i);
@@ -28,6 +28,7 @@ interface StatPerStato { stato: string; totale: number }
 
 export default function Report() {
   const [anno, setAnno] = useState(annoCorrente);
+  const [registro, setRegistro] = useState<Registro>('ordinario');
   const [loading, setLoading] = useState(true);
   const [perMese, setPerMese] = useState<StatPerMese[]>([]);
   const [perCanale, setPerCanale] = useState<StatPerCanale[]>([]);
@@ -37,10 +38,10 @@ export default function Report() {
   useEffect(() => {
     // Query di base sul registro dell'anno scelto
     const conta = () => {
-      return supabase.from('protocollo_registro').select('*', { count: 'exact', head: true }).eq('anno', anno);
+      return supabase.from('protocollo_registro').select('*', { count: 'exact', head: true }).eq('anno', anno).eq('registro', registro);
     };
     const uffici = () => {
-      return supabase.from('protocollo_registro').select('ufficio_assegnatario').eq('anno', anno).not('ufficio_assegnatario', 'is', null);
+      return supabase.from('protocollo_registro').select('ufficio_assegnatario').eq('anno', anno).eq('registro', registro).not('ufficio_assegnatario', 'is', null);
     };
     const conteggio = async (q: PromiseLike<{ count: number | null; error: unknown }>) => {
       const { count, error } = await q;
@@ -76,7 +77,7 @@ export default function Report() {
         setPerCanale(datiCanale.filter((d) => d.totale > 0));
 
         // Per stato
-        const stati = ['ricevuto', 'in_lavorazione', 'evaso', 'archiviato'];
+        const stati = ['ricevuto', 'in_lavorazione', 'evaso', 'archiviato', 'annullato'];
         const datiStato = await Promise.all(
           stati.map(async (s) => ({
             stato: s.replace('_', ' '),
@@ -107,7 +108,7 @@ export default function Report() {
       }
     };
     carica();
-  }, [anno]);
+  }, [anno, registro]);
 
   const totaleAnno = perMese.reduce((acc, m) => acc + m.arrivi + m.partenze, 0);
 
@@ -120,6 +121,15 @@ export default function Report() {
           <p className="text-sm text-gray-500">Analisi del registro di protocollo</p>
         </div>
         <div className="flex items-center gap-3">
+          <Select value={registro} onValueChange={(v) => setRegistro(v as Registro)}>
+            <SelectTrigger className="w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ordinario">Protocollo ordinario</SelectItem>
+              <SelectItem value="pec">Protocollo PEC</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={anno.toString()} onValueChange={(v) => setAnno(parseInt(v))}>
             <SelectTrigger className="w-28">
               <SelectValue />
@@ -128,7 +138,7 @@ export default function Report() {
               {ANNI.map((a) => <SelectItem key={a} value={a.toString()}>{a}</SelectItem>)}
             </SelectContent>
           </Select>
-          <ExportButton anno={anno} />
+          <ExportButton anno={anno} registro={registro} />
         </div>
       </div>
 

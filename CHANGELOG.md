@@ -5,6 +5,15 @@ Le versioni seguono il [versionamento semantico](https://semver.org/lang/it/).
 ## [Non rilasciato]
 
 ### Aggiunto
+- **Protocollo PEC**: serie separate `P-A/0001/2026` e `P-U/0001/2026`. Le PEC elencate nel
+  foglio Google GAL_Indice_PEC vengono importate da Google Drive (Edge Function `pec-importa`,
+  account di servizio in sola lettura) con EML, PDF e allegati copiati nell'archivio; si
+  verificano nella coda "Da protocollare" e si protocollano con **data di protocollo uguale alla
+  data della PEC** (certificata se disponibile). Controllo delle impronte SHA-256, duplicati,
+  PEC in ritardo con conferma, ricevute agganciate alla PEC inviata. Protocolli PEC sempre
+  bloccati. Guida: `docs/protocollo-pec.md`.
+- **Annullamento** dei protocolli (solo amministratore, motivo obbligatorio): il numero resta
+  occupato e il protocollo non è più modificabile né eliminabile.
 - **Fascicoli** (`F/0001/2026`): raccolgono protocolli e contratti di una stessa pratica, con
   classificazione da **titolario**, responsabile, ufficio, riferimento esterno (per il futuro
   collegamento con altre applicazioni del GAL), apertura e chiusura. Riquadro "Fascicoli" nel
@@ -17,6 +26,13 @@ Le versioni seguono il [versionamento semantico](https://semver.org/lang/it/).
   si ricollegano a quelle della piattaforma; i contatori vengono allineati. Ripetibile senza duplicati.
   Per i database già installati eseguire `supabase/aggiornamenti/2026-10-importazione-backup.sql`.
 - Pagina **Copyright e licenza**; nella barra laterale resta solo il link.
+
+### Cambiato
+- Allegati fino a **50 MB** per file.
+- Cruscotto, report ed esportazioni distinguono la serie ordinaria dalla serie PEC; la
+  rinumerazione riguarda solo la serie ordinaria.
+- I numeri oltre 9999 non vengono più troncati (es. `A/10000/2026`).
+  Per i database già installati eseguire `supabase/aggiornamenti/2026-10-protocollo-pec.sql`.
 
 ## [1.0.0] — 2026-10-23
 

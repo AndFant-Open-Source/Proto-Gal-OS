@@ -13,7 +13,7 @@ import type {
 const CAMPI_FASCICOLO = '*, titolario:protocollo_titolario(id, codice, descrizione)';
 
 const CAMPI_DOCUMENTO = `*,
-  protocollo:protocollo_registro(id, numero_completo, tipo_flusso, data_registrazione, oggetto,
+  protocollo:protocollo_registro(id, registro, numero_completo, tipo_flusso, data_registrazione, oggetto,
     mittente_nome, destinatario_nome, protocollo_allegati(*)),
   contratto:protocollo_contratti(id, numero_completo, data_repertorio, oggetto, contraente_nome,
     protocollo_contratti_allegati(*))`;

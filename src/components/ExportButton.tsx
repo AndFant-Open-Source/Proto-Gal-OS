@@ -11,19 +11,21 @@ import { NOME_ENTE } from '@/lib/ente';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import type { Registro } from '@/types';
 
 interface ExportButtonProps {
   anno?: number;
+  registro?: Registro;
 }
 
-
-export function ExportButton({ anno }: ExportButtonProps) {
+export function ExportButton({ anno, registro = 'ordinario' }: ExportButtonProps) {
+  const titolo = registro === 'pec' ? 'Registro Protocollo PEC' : 'Registro di Protocollo';
   const [loading, setLoading] = useState(false);
 
   const esportaExcel = async () => {
     setLoading(true);
     try {
-      const dati = await getTuttiProtocolli(anno);
+      const dati = await getTuttiProtocolli(anno, registro);
       const righe = dati.map((p) => ({
         'Numero': p.numero_completo,
         'Data Registrazione': formatData(p.data_registrazione),
@@ -43,7 +45,7 @@ export function ExportButton({ anno }: ExportButtonProps) {
       const ws = XLSX.utils.json_to_sheet(righe);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Registro');
-      XLSX.writeFile(wb, `registro_protocollo_${anno ?? 'tutti'}.xlsx`);
+      XLSX.writeFile(wb, `registro_protocollo${registro === 'pec' ? '_pec' : ''}_${anno ?? 'tutti'}.xlsx`);
       toast.success('Export Excel completato');
     } catch (e) {
       toast.error('Errore durante l\'export Excel');
@@ -56,12 +58,12 @@ export function ExportButton({ anno }: ExportButtonProps) {
   const esportaPDF = async () => {
     setLoading(true);
     try {
-      const dati = await getTuttiProtocolli(anno);
+      const dati = await getTuttiProtocolli(anno, registro);
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
       doc.setFontSize(14);
       doc.setTextColor(0, 51, 153);
-      doc.text(`${NOME_ENTE} — Registro di Protocollo${anno ? ` ${anno}` : ''}`, 14, 15);
+      doc.text(`${NOME_ENTE} — ${titolo}${anno ? ` ${anno}` : ''}`, 14, 15);
       doc.setFontSize(9);
       doc.setTextColor(100);
       doc.text(`Generato il ${formatData(new Date().toISOString(), true)}`, 14, 21);
