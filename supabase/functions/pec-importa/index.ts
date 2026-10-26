@@ -43,7 +43,8 @@ const FORMATI_ARCHIVIO = new Set([
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  // x-application-name: intestazione aggiunta dal client Supabase dell'app (src/lib/supabase.ts)
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-application-name, x-region',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
