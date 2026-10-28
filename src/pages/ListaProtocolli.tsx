@@ -55,9 +55,12 @@ export default function ListaProtocolli({ registro = 'ordinario', tipoFisso }: L
   const { user } = useAuth();
   const [pagina, setPagina] = useState(0);
   const [ordinamento, setOrdinamento] = useState({ colonna: 'data_registrazione', ascendente: false });
+  // Le PEC prendono l'anno della data della PEC: importando posta arretrata finirebbero
+  // fuori dal filtro sull'anno corrente, quindi per la serie PEC si parte da tutti gli anni
+  const annoPredefinito = registro === 'pec' ? undefined : annoCorrente;
   const filtriIniziali = (): FiltriProtocollo => ({
     registro,
-    anno: annoCorrente,
+    anno: annoPredefinito,
     tipo_flusso: tipoFisso ?? leggiTipoSalvato(user?.id),
   });
   const [filtri, setFiltri] = useState<FiltriProtocollo>(filtriIniziali);
@@ -102,15 +105,15 @@ export default function ListaProtocolli({ registro = 'ordinario', tipoFisso }: L
   };
 
   const resettaFiltri = () => {
-    setFiltri({ registro, anno: annoCorrente, tipo_flusso: tipoFisso });
+    setFiltri({ registro, anno: annoPredefinito, tipo_flusso: tipoFisso });
     setPagina(0);
   };
 
   const totalePagine = Math.ceil(totale / pageSize);
-  // Filtri diversi da quello predefinito (anno corrente), per badge e pulsante Reset
+  // Filtri diversi da quelli predefiniti, per badge e pulsante Reset
   const filtriAttivi = (Object.keys(filtri) as (keyof FiltriProtocollo)[])
     .filter((k) => k !== 'registro' && !(k === 'tipo_flusso' && tipoFisso))
-    .filter((k) => (k === 'anno' ? filtri.anno !== annoCorrente : Boolean(filtri[k])))
+    .filter((k) => (k === 'anno' ? filtri.anno !== annoPredefinito : Boolean(filtri[k])))
     .length;
 
   return (
