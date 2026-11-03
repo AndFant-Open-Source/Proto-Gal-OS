@@ -115,7 +115,7 @@ export default function CodaPec() {
         </div>
         {isOperatore && (
           <Button variant="outline" asChild>
-            <Link to="/pec/importazioni">Importa da Google Drive</Link>
+            <Link to="/pec/importazioni">Caricamenti</Link>
           </Button>
         )}
       </div>
